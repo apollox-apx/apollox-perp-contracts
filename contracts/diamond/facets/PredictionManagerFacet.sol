@@ -47,6 +47,7 @@ contract PredictionManagerFacet is IPredictionManager {
         LibPredictionManager.PredictionPair storage pp = LibPredictionManager.requireExists(base);
         for (uint256 i = 0; i < periodWinRatios.length;) {
             PeriodWinRatio memory iwr = periodWinRatios[i];
+            require(iwr.winRatio > 5000 && iwr.winRatio <= 1e4, "PredictionManagerFacet: invalid winRatio");
             LibPredictionManager.updatePredictionPairPeriodWinRatio(pp, iwr.period, iwr.winRatio);
             unchecked{++i;}
         }
@@ -58,6 +59,10 @@ contract PredictionManagerFacet is IPredictionManager {
         LibPredictionManager.PredictionPair storage pp = LibPredictionManager.requireExists(base);
         for (uint256 i = 0; i < periodFees.length;) {
             PeriodFee memory iFee = periodFees[i];
+            require(
+                iFee.openFeeP < 1e4 && iFee.winCloseFeeP < 1e4 && iFee.loseCloseFeeP < 1e4,
+                "PredictionManagerFacet: invalid openFeeP or closeFeeP"
+            );
             LibPredictionManager.updatePredictionPairPeriodFee(pp, iFee.period, iFee.openFeeP, iFee.winCloseFeeP, iFee.loseCloseFeeP);
             unchecked{++i;}
         }

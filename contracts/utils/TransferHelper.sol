@@ -17,14 +17,8 @@ library TransferHelper {
     uint constant public BNB_CHAIN_TESTNET = 97;
     address constant public BNB_CHAIN_TESTNET_WRAPPED = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
 
-    uint constant public ARBITRUM_ONE = 42161;
-    address constant public ARBITRUM_ONE_WRAPPED = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
-
-    uint constant public ARBITRUM_GOERLI = 421613;
-    address constant public ARBITRUM_GOERLI_WRAPPED = 0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3;
-
     function transfer(address token, address to, uint256 amount) internal {
-        if (token != nativeWrapped()) {
+        if (token != nativeWrapped() || _isContract(to)) {
             IERC20(token).safeTransfer(to, amount);
         } else {
             IWBNB(token).withdraw(amount);
@@ -47,12 +41,16 @@ library TransferHelper {
             return BNB_CHAIN_WRAPPED;
         } else if (chainId == BNB_CHAIN_TESTNET) {
             return BNB_CHAIN_TESTNET_WRAPPED;
-        } else if (chainId == ARBITRUM_ONE) {
-            return ARBITRUM_ONE_WRAPPED;
-        } else if (chainId == ARBITRUM_GOERLI) {
-            return ARBITRUM_GOERLI_WRAPPED;
         } else {
             revert("unsupported chain id");
         }
+    }
+
+    function _isContract(address account) private view returns (bool) {
+        uint256 size;
+        assembly {
+            size := extcodesize(account)
+        }
+        return size > 0;
     }
 }
